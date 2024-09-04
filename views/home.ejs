@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .delete-button {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        async function deleteUrl(id) {
+            try {
+                const response = await fetch(`/url/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    document.getElementById(`url-${id}`).remove();
+                } else {
+                    alert('Failed to delete URL');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting URL');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+
+    <% if (typeof id !== 'undefined') { %>
+        <p>URL Generated: http://localhost:9000/<%= id %></p>
+    <% } %>
+
+    <div>
+        <form method="POST" action="/url">
+            <label>Enter Your URL</label>
+            <input type="text" name="url" placeholder="https://example.com">
+            <button type="submit">Generate</button>
+        </form>
+    </div>
+    <div>
+        <% 
+            // Handle the case where `urls` might not be defined
+            const safeUrls = typeof urls !== 'undefined' && Array.isArray(urls) ? urls : [];
+        %>
+        <% if (safeUrls.length > 0) { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>S No.</th>
+                        <th>ShortID</th>
+                        <th>Redirect</th>
+                        <th>Clicks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% safeUrls.forEach((url, index) => { %>
+                        <tr id="url-<%= url._id %>">
+                            <td><%= index + 1 %></td>
+                            <td><%= url.shortId %></td>
+                            <td><%= url.redirectURL %></td>
+                            <td><%= Array.isArray(url.visitHistory) ? url.visitHistory.length : 0 %></td>
+                            <td>
+                                <span class="delete-button" onclick="deleteUrl('<%= url._id %>')">Delete</span>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>No URLs available.</p>
+        <% } %>
+    </div>
+</body>
+</html>
